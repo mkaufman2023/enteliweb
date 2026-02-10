@@ -23,5 +23,5 @@ In base directory (`./enteliscript`):
 
 ### 4. Run it
 ```bash
-python enteliscript.py
+>>> python enteliscript.py
 ```
