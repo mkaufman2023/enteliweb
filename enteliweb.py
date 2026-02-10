@@ -338,9 +338,8 @@ class EnteliWEB:
             self.console.log(f"  Response message: {msg}")
             return []
         
-        self.console.log(f"  Successfully got sites.")
-
         result = r.json()
+        self.console.log(f"  Successfully got sites.")
         return [
             key
             for key in sorted(result)
@@ -383,9 +382,8 @@ class EnteliWEB:
             self.console.log(f"  Response message: {r.reason}")
             return []
         
-        self.console.log(f"  Successfully got sites.")
-
         result = r.json()
+        self.console.log(f"  Successfully got sites.")
         return [
             f"{key} - {result[key]['displayName']}"
             for key in sorted(result, key=custom_key)
@@ -394,38 +392,47 @@ class EnteliWEB:
 
 
 
+    def get_objects(self, site_name: str, device: str) -> list[str]:
+        """
+        *Endpoint:* `/api/.bacnet/<site_name>/<device>`
 
+        Gets all BACnet objects for a given device on a specific site.
 
+        ## Parameters
+        - `site_name`: The name of the site that contains the target device.
+        - `device`: The device address to get objects for.
 
+        ## Returns
+        - A list of BACnet objects, or an empty list if none are found.
+        """
+        if (self.session_id == ""):
+            self.console.log("Unable to get objects: Not logged in.")
+            return False
+        
+        self.console.log(f"Attempting to get objects for device [yellow]{device}[/yellow] on site [yellow]{site_name}[/yellow][white]...[/white]")
+        
+        objects = []
 
+        # TODO: check '/' following <device> in url for issue
+        r = requests.get(
+            url = f"http://{self.server}{self.base_url}{site_name}/{device}/?alt=JSON&{self.csrf_token_key}={self.csrf_token}",
+            cookies = {self.session_key: self.session_id},
+            headers = {'Content-Type': 'application/json'},
+        )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        if (r.status_code != requests.codes.ok):
+            self.console.log(f"  Failed to get objects.")
+            self.console.log(f"  Response code: {r.status_code}")
+            self.console.log(f"  Response message: {r.reason}")
+            return []
+        
+        result = r.json()
+        self.console.log(f"  Successfully got objects.")
+        return [
+            key
+            for key in sorted(result)
+            if ("$base" in result[key] and result[key]["$base"] == "Object")
+        ]
 
 
 
@@ -457,6 +464,7 @@ class EnteliWEB:
         success = (code == str(response.status_code))
         return (success, code, msg)
     
+
 
     def _find_abbreviation(self, bacnet_object_name: str) -> str:
         """
@@ -514,6 +522,5 @@ class EnteliWEB:
 
 
 
-api = EnteliWEB(username="admin", password="password", server_ip="192.168.1.100", site_name="DefaultSite")
-
-
+if __name__ == "__main__":
+    api = EnteliWEB(username="admin", password="password", server_ip="192.168.1.100", site_name="DefaultSite")
