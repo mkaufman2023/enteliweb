@@ -1,0 +1,26 @@
+Screen {
+    layout: vertical;
+}
+
+/* Header {
+    background: #1e1e2e;
+    color: #cdd6f4;
+} */
+
+/* HeaderTitle {
+    text-style: italic;
+    color: #89b4fa;
+} */
+
+#log {
+    height: 1fr;
+    border: round $surface;
+    padding: 1;
+    scrollbar-visibility: hidden;
+}
+
+#cmd {
+    height: 3;
+    border: round $surface;
+    padding: 0 1;
+}
