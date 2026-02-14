@@ -20,6 +20,7 @@ import json
 import socket
 import requests
 from rich import box
+from typing import Generator
 from rich.table import Table
 from rich.panel import Panel
 from rich.theme import Theme
@@ -410,8 +411,6 @@ class EnteliWEB:
             return False
         
         self.console.log(f"Attempting to get objects for device [yellow]{device}[/yellow] on site [yellow]{site_name}[/yellow][white]...[/white]")
-        
-        objects = []
 
         # TODO: check '/' following <device> in url for issue
         r = requests.get(
@@ -433,6 +432,52 @@ class EnteliWEB:
             for key in sorted(result)
             if ("$base" in result[key] and result[key]["$base"] == "Object")
         ]
+    
+
+
+    def write_properties_from_csv(self, csv_path: str) -> Generator[tuple[str, bool], None, None]:
+        """
+        *Endpoint:* `/api/.bacnet/<site>/<device>/<object_type>,<instance>/<property_name>`
+
+        Writes values to BACnet objects' properties from a CSV file.
+
+        ## Parameters
+        - `csv_path`: The file path to the CSV file containing the properties to write.  
+        The CSV should have columns: `site_name`, `device`, `object_type`, `instance`, `property_name`, `value`.
+
+        ## Yields
+        - Tuples containing the property name and a boolean indicating success or failure for each property write.
+
+        ## Usage
+        ```python
+        for property_name, success in api.write_properties_from_csv("data.csv"):
+            # Display/update UI immediately for each result
+            console.log(f"{property_name}: {'✓' if success else '✗'}")
+        ```
+        """
+        if (self.session_id == ""):
+            self.console.log("Unable to write properties: Not logged in.")
+            return
+        
+        self.console.log(f"Attempting to write properties from CSV file [yellow]{csv_path}[/yellow][white]...[/white]")
+        
+        try:
+            with open(csv_path, mode='r') as csv_file:
+                import csv
+                reader = csv.DictReader(csv_file)
+                for row in reader:
+                    site_name = row['site_name']
+                    device = row['device']
+                    object_type = row['object_type']
+                    instance = row['instance']
+                    property_name = row['property_name']
+                    value = row['value']
+
+                    success = self.write_property(site_name, device, object_type, instance, property_name, value)
+                    yield (f"{site_name}/{device}/{object_type},{instance}/{property_name}", success)
+        except Exception as e:
+            self.console.log(f"  Error reading CSV file: {e}")
+            return
 
 
 

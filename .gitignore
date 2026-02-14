@@ -1,3 +1,7 @@
 venv/
 __pycache__/
 .rich_reference.py
+testcsv.csv
+textualtest_chatgpt.py
+textualtest_claude.py
+textualtest_gemini.py
