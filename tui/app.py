@@ -25,6 +25,12 @@ class TUI(App):
 
 
     def __init__(self) -> None:
+        """
+        Initializes the TUI application and command dispatch table.
+
+        Creates a `CommandHandler` instance and builds a lookup mapping of  
+        command names/aliases to bound handler methods for runtime dispatch.
+        """
         super().__init__()
         self.handler = CommandHandler()
 
@@ -34,6 +40,15 @@ class TUI(App):
 
 
     def compose(self) -> ComposeResult:
+        """
+        Builds and yields the widget tree for the application screen.
+
+        The layout contains a header, a scrollable rich log for output, 
+        and a single-line command input used to submit commands.
+
+        ### Returns
+            - An iterable that yields the widgets to mount (`Header`, `Vertical`, `RichLog`, and `Input`).
+        """
         yield Header()
         with Vertical():
             yield RichLog(id="log", wrap=True, highlight=True, markup=True)
@@ -43,18 +58,45 @@ class TUI(App):
 
 
     def on_mount(self) -> None:
+        """
+        Runs startup UI setup once the app is mounted.
+
+        Focuses the command input so the user can type immediately 
+        and writes an initial welcome/help hint to the output log.
+        """
         self.query_one(Input).focus()
         self._log("[b]Welcome![/b] Type [i]help[/i] to see commands.")
 
 
 
     def _log(self, text: str) -> None:
+        """
+        Appends a message to the rich output log.
+
+        ### Parameters
+            - `text` ( *string* ) -- Markup-capable message text to write to the `RichLog`.
+        """
         log = self.query_one(RichLog)
         log.write(text)
 
 
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
+        """
+        Handles command submission from the input widget.
+
+        Processing flow:
+            1. Read and clear the input value.
+            2. Ignore empty input.
+            3. Echo the command to the log.
+            4. Parse arguments using shell-like tokenization (`shlex.split`).
+            5. Support shorthand help syntax (`<command>?`).
+            6. Dispatch to the matched command handler.
+            7. Log success/error output from the command result.
+
+        ### Parameters
+            - `event` ( *Input* ) -- Textual `Input.Submitted` event carrying the submitted text.
+        """
         raw = event.value.strip()
         event.input.value = ""  # clear input
 
