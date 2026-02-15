@@ -2,6 +2,8 @@
 enteliscript.py
 
 CLI for enteliweb.
+
+TODO: Add log folder with timestamped log file for the session.
 """
 from enteliweb import EnteliWEB
 
